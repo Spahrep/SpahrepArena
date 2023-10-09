@@ -1,2 +1,1 @@
-hello world!
-asdfasdf
+print('Hello World')

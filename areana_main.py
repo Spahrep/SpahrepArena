@@ -1,6 +1,8 @@
 # IMPORTS ETC
 import mysql.connector
 import hashlib
+import auth
+import newAccount
 
 #define a global variable for debugging
 debug_on = True
@@ -21,68 +23,31 @@ try:
         )
 
     mycursor = mydb.cursor()
-except Exceptoin as e:
+except Exception as e:
     print("Error connecting to DB: "+e)
     
 sqlString = ""
 salt=""
 userFound = False
 userAuth = False
-userID = 0;
+userID = None;
 
-while not userAuth:
-    userName = input("Please type your user name:")
-    password = input("Please type your password:")
-    sqlString = "Select Salt from user_table where userName = %s and isActivated = TRUE"
-    mycursor.execute(sqlString,(userName,))
-    myresult = mycursor.fetchall()
-
-    # Check if there is at least one result
-    if myresult:
-        # Extract the userID from the first row
-        salt = myresult[0][0]
-        debug("ID Found, Salt Validated: ")
-        debug(salt)
-        userFound = True;
-        sqlString = "Select userID from user_table where HashedPass = %s and user_table.userName = %s"     
-       
-        password = salt + password
-        sha256_hash = hashlib.sha256()
-        sha256_hash.update(password.encode())
-        hash_hex = sha256_hash.hexdigest()
-        debug(hash_hex)
-        try:
-            mycursor.execute(sqlString,(hash_hex,userName))
-            myresult = mycursor.fetchall()
-        except Exceptoin as e:
-            print("Database Error: "+e)
-        
-        #Check if there is at least one result
-        if myresult:
-            # Extract the userID from the first row
-            userID_id = myresult[0][0]
-            debug("userID ID Found, Password Validated: "+str(userID_id))
-            userAuth = True
-            print("User Validated, preparing the adventure...")
-            #update last log in
-            proc_name = "UpdateLastLoginTime"
-            mycursor.callproc(proc_name,(userID_id,))
-            mydb.commit()
-        else:
-            # Handle the case where no matching records are found
-            userID_id = None
-            debug("Could Not Authenticate")
-
-
-
-        
-    else:
-        # Handle the case where no matching records are found
-        userID_id = None
+while userID == None:
+    userSelection = input("Please Select a command from below\n1)Log in \n2)Create New Account\n3)Activate Account\n4)Quit\n").lower()
+    if userSelection == "1":
+        userID = auth.authUser(mydb)
+    elif userSelection == "2":
+        newAccount.createUser(mydb)
+    elif userSelection == "3":
+        newAccount.activateUser(mydb)
         continue
-#We are now in and Authenticated
-     
+    elif userSelection == "4":
+        break
 
+print("Type /help for help")
+
+while True:
+    input("Choose an option:\n1)Go to the Arena\n2)Go to the Armoury\n3)Go to the Weapon Smith\n4)Craft\n5)Look in your Backpack")
 
 mycursor.close()
 mydb.close()

@@ -47,7 +47,15 @@ while userID == None:
 print("Type /help for help")
 
 while True:
-    input("Choose an option:\n1)Go to the Arena\n2)Go to the Armoury\n3)Go to the Weapon Smith\n4)Craft\n5)Look in your Backpack")
+    command = input("Command:").lower()
+
+    if(command == "/help"):
+        print("This is the help file....")
+    elif(command == "quit"):
+        quit
+    else:
+        ("Please type a valid command or type /help")
+    
 
 mycursor.close()
 mydb.close()

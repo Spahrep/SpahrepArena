@@ -7,7 +7,7 @@ import string
 
 
 #define a global variable for debugging
-debug_on = False
+debug_on = True
 def debug(string):
     if(debug_on):
         print (string)
@@ -31,9 +31,46 @@ def createUser(mydb):
     while not isCorrect:
         #ask for all their values
         userName = input("Please type your user name:")
+
+## Check if the user name is already in the db
+        debug("UserName:" + userName)
+        mycursor.callproc(("CheckForUserName"),(userName,))
+        # Fetch the results from the stored procedure
+        results = mycursor.stored_results()
+        result_set = next(results, None)  # Get the first result set
+
+        if result_set is not None:
+            rows = result_set.fetchall()
+            if rows:
+                print("This user name is already taken.")
+                for row in rows:
+                    print(row)  # This should print the userID if the procedure is called successfully
+                continue
+        else:
+            debug("A-ok")
+                
+        
         firstName = input("Please type your first name:")
         lastName = input("Please type your last name:")
         email = input("Please type your email:")
+
+
+## Check if the email is already in the db
+        mycursor.callproc(("CheckForEmail"),(email,))
+        # Fetch the results from the stored procedure
+        results = mycursor.stored_results()
+        result_set = next(results, None)  # Get the first result set
+
+        if result_set is not None:
+            rows = result_set.fetchall()
+            if rows:
+                print("This email is already in use.")
+                for row in rows:
+                    print(row)  # This should print the userID if the procedure is called successfully
+                continue
+        else:
+            debug("A-ok")
+
 
         matching = False
         length = False
@@ -65,7 +102,7 @@ def createUser(mydb):
     hash_hex = sha256_hash.hexdigest()
     debug(hash_hex)
 
-    createUserSP = "createUser"
+    createUserSP = "CreateUser"
 
     mycursor.callproc(createUserSP,(firstName,lastName,email,hash_hex,userName,salt))
     mydb.commit()
